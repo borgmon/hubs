@@ -28,6 +28,10 @@ export default class ChatCommandHelp extends Component {
       commands.push("fly");
     }
 
+    if (window.APP.hubChannel && window.APP.hubChannel.can("speaker")) {
+      commands.push("speaker");
+    }
+
     if (qsTruthy("video_capture")) {
       commands.push("capture [stop]");
     }

@@ -60,6 +60,17 @@ export default class MessageDispatch {
           }
         }
         break;
+      case "speaker":
+        if (window.APP.store.addon.isSpeakerOn) {
+          window.APP.store.addon.isSpeakerOn = false;
+          // TODO: disable speaker here
+          this.addToPresenceLog({ type: "log", body: "Speaker mode disabled." });
+        } else {
+          // TODO: enable speaker here
+          window.APP.store.addon.isSpeakerOn = true;
+          this.addToPresenceLog({ type: "log", body: "Speaker mode enabled." });
+        }
+        break;
       case "grow":
         for (let i = 0; i < scales.length; i++) {
           if (scales[i] > curScale.x) {

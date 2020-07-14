@@ -261,6 +261,7 @@
     "invite.embed": "or embed on a page",
     "invite.embed-tip": "Please be mindful of where you embed a %app-name% room.\nGo to Room Settings to lock down permissions for this room.",
     "commands.fly": "Toggle fly mode.",
+    "commands.speaker": "Toggle speaker mode. (admin and appointed user only)",
     "commands.grow": "Increase your avatar's size.",
     "commands.shrink": "Decrease your avatar's size.",
     "commands.scene": "Change the scene.",
