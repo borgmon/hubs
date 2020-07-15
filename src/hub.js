@@ -1547,27 +1547,37 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   hubPhxChannel.on("message", ({ session_id, type, body, from }) => {
-    const getAuthor = () => {
-      const userInfo = hubChannel.presence.state[session_id];
-      if (from) {
-        return from;
-      } else if (userInfo) {
-        return userInfo.metas[0].profile.displayName;
-      } else {
-        return "Mystery user";
+    if (type.startsWith("custom_")) {
+      const customEvent = type.substring(7);
+      if (customEvent === "speaker_state" && session_id !== NAF.clientId) {
+        console.log("on speaker_state", { session_id, body });
+        const playerObejct = APP.componentRegistry["player-info"].find(e => e.playerSessionId === session_id);
+        const speakerElement = playerObejct.el.querySelector("[avatar-audio-source]");
+        AFRAME.utils.entity.setComponentProperty(speakerElement, "avatar-audio-source", { positional: !body });
       }
-    };
+    } else {
+      const getAuthor = () => {
+        const userInfo = hubChannel.presence.state[session_id];
+        if (from) {
+          return from;
+        } else if (userInfo) {
+          return userInfo.metas[0].profile.displayName;
+        } else {
+          return "Mystery user";
+        }
+      };
 
-    const name = getAuthor();
-    const maySpawn = scene.is("entered");
+      const name = getAuthor();
+      const maySpawn = scene.is("entered");
 
-    const incomingMessage = { name, type, body, maySpawn, sessionId: session_id };
+      const incomingMessage = { name, type, body, maySpawn, sessionId: session_id };
 
-    if (scene.is("vr-mode")) {
-      createInWorldLogMessage(incomingMessage);
+      if (scene.is("vr-mode")) {
+        createInWorldLogMessage(incomingMessage);
+      }
+
+      addToPresenceLog(incomingMessage);
     }
-
-    addToPresenceLog(incomingMessage);
   });
 
   hubPhxChannel.on("hub_refresh", ({ session_id, hubs, stale_fields }) => {

@@ -359,7 +359,17 @@ export default class HubChannel extends EventTarget {
     });
   };
 
+  customMessage = (sessionId, type, value) =>
+    this.channel.push("message", {
+      session_id: sessionId,
+      type: `custom_${type}`,
+      body: value,
+      from: NAF.clientId
+    });
+
   mute = sessionId => this.channel.push("mute", { session_id: sessionId });
+  setSpeakerPerm = (sessionId, value) => this.channel.push("speaker_perm", { session_id: sessionId, value: value });
+  setSpeakerState = (sessionId, value) => this.customMessage(sessionId, "speaker_state", value);
   addOwner = sessionId => this.channel.push("add_owner", { session_id: sessionId });
   removeOwner = sessionId => this.channel.push("remove_owner", { session_id: sessionId });
 

@@ -62,11 +62,11 @@ export default class MessageDispatch {
         break;
       case "speaker":
         if (window.APP.store.addon.isSpeakerOn) {
+          this.hubChannel.setSpeakerState(NAF.clientId, false);
           window.APP.store.addon.isSpeakerOn = false;
-          // TODO: disable speaker here
           this.addToPresenceLog({ type: "log", body: "Speaker mode disabled." });
         } else {
-          // TODO: enable speaker here
+          this.hubChannel.setSpeakerState(NAF.clientId, true);
           window.APP.store.addon.isSpeakerOn = true;
           this.addToPresenceLog({ type: "log", body: "Speaker mode enabled." });
         }
