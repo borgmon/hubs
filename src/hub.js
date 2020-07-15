@@ -1551,9 +1551,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       const customEvent = type.substring(7);
       if (customEvent === "speaker_state" && session_id !== NAF.clientId) {
         console.log("on speaker_state", { session_id, body });
-        const playerObejct = APP.componentRegistry["player-info"].find(e => e.playerSessionId === session_id);
-        const speakerElement = playerObejct.el.querySelector("[avatar-audio-source]");
-        AFRAME.utils.entity.setComponentProperty(speakerElement, "avatar-audio-source", { positional: !body });
+        hubChannel.setSpeakerById(session_id, body);
+      }
+      if (customEvent === "speaker_perm" && session_id === NAF.clientId) {
+        console.log("on speaker_perm", { session_id, body });
+        hubChannel._permissions.speaker = body;
+        APP.store.addon.isSpeakerOn = body;
+        hubChannel.setSpeakerState(session_id, body);
+        addToPresenceLog({ type: "log", body: `Speaker mode ${body ? "enabled" : "diabled"}.` });
       }
     } else {
       const getAuthor = () => {

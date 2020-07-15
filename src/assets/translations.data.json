@@ -406,6 +406,8 @@
     "client-info.hide-button": "Hide",
     "client-info.unhide-button": "Un-hide ",
     "client-info.mute-button": "Mute",
+    "client-info.speaker-on-button": "Turn on Speaker",
+    "client-info.speaker-off-button": "Turn off Speaker",
     "client-info.cancel": "Cancel",
     "client-info.add-owner": "Promote",
     "client-info.remove-owner": "Demote",
