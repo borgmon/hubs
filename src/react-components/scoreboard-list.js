@@ -13,19 +13,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { pushHistoryPath, withSlug } from "../utils/history";
 import { hasReticulumServer } from "../utils/phoenix-utils";
 import { InlineSVG } from "./svgi";
+import { faListOl } from "@fortawesome/free-solid-svg-icons/faListOl";
 
-export function navigateToClientInfo(history, clientId) {
-  const currentParams = new URLSearchParams(history.location.search);
-
-  if (hasReticulumServer() && document.location.host !== configs.RETICULUM_SERVER) {
-    currentParams.set("client_id", clientId);
-    pushHistoryPath(history, history.location.pathname, currentParams.toString());
-  } else {
-    pushHistoryPath(history, withSlug(history.location, `/clients/${clientId}`), currentParams.toString());
-  }
-}
-
-export default class PresenceList extends Component {
+export default class ScoreboardList extends Component {
   static propTypes = {
     hubChannel: PropTypes.object,
     presences: PropTypes.object,
@@ -39,110 +29,23 @@ export default class PresenceList extends Component {
     onExpand: PropTypes.func
   };
 
-  updateMicrophoneState = () => {
-    if (this.props.expanded) {
-      const microphonePresences = getMicrophonePresences(AFRAME.scenes[0]);
-      this.setState({ microphonePresences });
-    }
-    this.timeout = setTimeout(this.updateMicrophoneState, MIC_PRESENCE_UPDATE_FREQUENCY);
+  state = {
+    scoreList: []
   };
 
-  navigateToClientInfo = clientId => {
-    navigateToClientInfo(this.props.history, clientId);
-  };
-
-  mute = clientId => {
-    this.props.hubChannel.mute(clientId);
-  };
-
-  muteAll = () => {
-    const presences = this.props.presences;
-    for (const [clientId, presence] of Object.entries(presences)) {
-      if (clientId !== this.props.sessionId) {
-        const meta = presence.metas[0];
-        if (meta.presence === "room" && meta.roles && !meta.roles.owner) {
-          this.mute(clientId);
-        }
-      }
-    }
-  };
-
-  domForPresence = ([sessionId, data]) => {
-    const meta = data.metas[data.metas.length - 1];
-    const context = meta.context;
-    const profile = meta.profile;
-    const recording = meta.streaming || meta.recording;
-    const icon = recording ? <FontAwesomeIcon icon={faVideo} /> : getPresenceIcon(context);
-    const isBot = context && context.discord;
-    const isEntering = context && context.entering;
-    const isOwner = meta.roles && meta.roles.owner;
-    const messageId = isEntering ? "presence.entering" : `presence.in_${meta.presence}`;
-    const badge = isOwner && (
-      <span className={styles.moderatorBadge} title="Moderator">
-        &#x2605;
-      </span>
-    );
-    const microphonePresence =
-      this.state && this.state.microphonePresences && this.state.microphonePresences.get(sessionId);
-    const micState =
-      microphonePresence && meta.presence === "room" ? getMicrophonePresenceIcon(microphonePresence) : "";
-    const canMuteUsers = this.props.hubChannel.can("mute_users");
-    const isMe = sessionId === this.props.sessionId;
-    const muted = microphonePresence && microphonePresence.muted;
-    const canMuteIndividual = canMuteUsers && !isMe && microphonePresence && !microphonePresence.muted;
-
+  domForScoreboard = (data, index) => {
     return (
-      <WithHoverSound key={sessionId}>
-        <div className={styles.row}>
-          <div className={styles.icon}>
-            <i>{icon}</i>
-          </div>
-          <div
-            className={classNames({
-              [styles.iconRed]: muted,
-              [styles.icon]: !muted,
-              [styles.iconButton]: canMuteIndividual
-            })}
-            onClick={() => (canMuteUsers ? this.mute(sessionId) : null)}
-          >
-            <i>{micState}</i>
-          </div>
-          <div
-            className={classNames({
-              [styles.listItem]: true
-            })}
-          >
-            {sessionId === this.props.sessionId ? (
-              <StateLink className={styles.self} stateKey="overlay" stateValue="profile" history={this.props.history}>
-                {profile && profile.displayName}
-                {badge}
-                <i>
-                  <FontAwesomeIcon icon={faPencilAlt} />
-                </i>
-              </StateLink>
-            ) : (
-              <div>
-                {!isBot ? (
-                  <button className={styles.clientLink} onClick={() => this.navigateToClientInfo(sessionId)}>
-                    {profile && profile.displayName}
-                  </button>
-                ) : (
-                  <span>{profile && profile.displayName}</span>
-                )}
-                {badge}
-              </div>
-            )}
-          </div>
-          <div className={styles.presence}>
-            <FormattedMessage id={messageId} />
-          </div>
-        </div>
+      <WithHoverSound key={index}>
+        <tr>
+          <td>{index + 1}</td>
+          <td>{data.name}</td>
+          <td>{data.score}</td>
+        </tr>
       </WithHoverSound>
     );
   };
 
   componentDidMount() {
-    this.updateMicrophoneState();
     document.querySelector(".a-canvas").addEventListener(
       "mouseup",
       () => {
@@ -157,45 +60,25 @@ export default class PresenceList extends Component {
   }
 
   renderExpandedList() {
-    const meta = this.props.presences[this.props.sessionId].metas[0];
-    const owner = meta.roles && meta.roles.owner;
-    const muteAll = owner && (
-      <div className={styles.muteAll}>
-        <button title="Mute All" onClick={this.muteAll} className={styles.muteButton}>
-          <FormattedMessage id="presence.mute_all" />
-        </button>
-      </div>
-    );
+    fetch("https://jsonplaceholder.typicode.com/todos/1")
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({ scoreList: [{ name: "test", score: responseJson.id }] });
+      });
 
     return (
       <div className={styles.presenceList}>
-        <div className={styles.attachPoint} />
         <div className={styles.contents}>
-          {muteAll}
-          <div className={styles.rows}>
-            {Object.entries(this.props.presences || {})
-              .filter(([k]) => k === this.props.sessionId)
-              .map(this.domForPresence)}
-            {Object.entries(this.props.presences || {})
-              .filter(([k]) => k !== this.props.sessionId)
-              .map(this.domForPresence)}
-          </div>
-          <div className={styles.signIn}>
-            {this.props.signedIn ? (
-              <div>
-                <span>
-                  <FormattedMessage id="sign-in.as" /> {maskEmail(this.props.email)}
-                </span>{" "}
-                <a onClick={this.props.onSignOut}>
-                  <FormattedMessage id="sign-in.out" />
-                </a>
-              </div>
-            ) : (
-              <a onClick={this.props.onSignIn}>
-                <FormattedMessage id="sign-in.in" />
-              </a>
-            )}
-          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody>{this.state.scoreList.map((value, index) => this.domForScoreboard(value, index))}</tbody>
+          </table>
         </div>
       </div>
     );
@@ -206,18 +89,17 @@ export default class PresenceList extends Component {
     return (
       <div>
         <button
-          title="Members"
-          aria-label={`Toggle list of ${occupantCount} member${occupantCount === 1 ? "" : "s"}`}
+          title="Scoreboard"
+          aria-label={`Toggle scoreboard`}
           onClick={() => {
             this.props.onExpand(!this.props.expanded);
           }}
           className={classNames({
-            [rootStyles.presenceListButton]: true,
+            [rootStyles.scoreboardListButton]: true,
             [rootStyles.presenceInfoSelected]: this.props.expanded
           })}
         >
-          <FontAwesomeIcon icon={faUsers} />
-          <span className={rootStyles.occupantCount}>{occupantCount}</span>
+          <FontAwesomeIcon icon={faListOl} />
         </button>
         {this.props.expanded && this.renderExpandedList()}
       </div>
