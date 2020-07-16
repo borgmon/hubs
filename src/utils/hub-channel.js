@@ -369,8 +369,10 @@ export default class HubChannel extends EventTarget {
 
   getSpeakerById = sessionId => {
     const playerObejct = APP.componentRegistry["player-info"].find(e => e.playerSessionId === sessionId);
-    const audioSource = playerObejct.el.querySelector("[avatar-audio-source]");
-    return !AFRAME.utils.entity.getComponentProperty(audioSource, "avatar-audio-source").positional;
+    if (playerObejct) {
+      const audioSource = playerObejct.el.querySelector("[avatar-audio-source]");
+      return !AFRAME.utils.entity.getComponentProperty(audioSource, "avatar-audio-source").positional;
+    }
   };
 
   setSpeakerById = (sessionId, value) => {
