@@ -181,13 +181,13 @@ export default class ClientInfoDialog extends Component {
                 <FormattedMessage id="client-info.mute-button" />
               </button>
             )}
-            {mayAddOwner &&
+            {mayKick &&
               !getSpeaker && (
                 <button onClick={() => this.speaker(true)}>
                   <FormattedMessage id="client-info.speaker-on-button" />
                 </button>
               )}
-            {mayAddOwner &&
+            {mayKick &&
               getSpeaker && (
                 <button onClick={() => this.speaker(false)}>
                   <FormattedMessage id="client-info.speaker-off-button" />
