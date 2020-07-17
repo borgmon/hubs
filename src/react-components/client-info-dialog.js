@@ -6,6 +6,7 @@ import styles from "../assets/stylesheets/client-info-dialog.scss";
 import { FormattedMessage } from "react-intl";
 import { sluglessPath } from "../utils/history";
 import { getAvatarThumbnailUrl } from "../utils/avatar-utils";
+import { setSpeakerPerm, getSpeakerById } from "../custom/custom-speaker";
 
 export function getClientInfoClientId(location) {
   const { search } = location;
@@ -64,7 +65,7 @@ export default class ClientInfoDialog extends Component {
   speaker(value) {
     const { clientId, hubChannel, onClose } = this.props;
 
-    hubChannel.setSpeakerPerm(clientId, value);
+    setSpeakerPerm({ clientId, value });
 
     onClose();
   }
@@ -141,7 +142,7 @@ export default class ClientInfoDialog extends Component {
     const mayAddOwner = hubChannel.canOrWillIfCreator("update_roles") && !targetIsOwner && !targetIsCreator;
     const mayRemoveOwner = hubChannel.canOrWillIfCreator("update_roles") && targetIsOwner && !targetIsCreator;
     const isHidden = hubChannel.isHidden(clientId);
-    const getSpeaker = hubChannel.getSpeakerById(clientId);
+    const getSpeaker = getSpeakerById(clientId);
 
     return (
       <DialogContainer className={styles.clientInfoDialog} title={title} wide={true} {...this.props}>

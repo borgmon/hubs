@@ -158,6 +158,8 @@ import { SOUND_CHAT_MESSAGE } from "./systems/sound-effects-system";
 
 import "./gltf-component-mappings";
 
+import CustomSpeaker from "./custom/custom-speaker";
+
 import { App } from "./App";
 
 window.APP = new App();
@@ -1273,6 +1275,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 20000);
   };
 
+  const customSpeaker = new CustomSpeaker(hubChannel, addToPresenceLog);
+
   const messageDispatch = new MessageDispatch(
     scene,
     entryManager,
@@ -1547,42 +1551,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   hubPhxChannel.on("message", ({ session_id, type, body, from }) => {
-    if (type.startsWith("custom_")) {
-      const customEvent = type.substring(7);
-      if (customEvent === "speaker_state" && session_id !== NAF.clientId) {
-        console.log("on speaker_state", { session_id, body });
-        hubChannel.setSpeakerById(session_id, body);
+    const getAuthor = () => {
+      const userInfo = hubChannel.presence.state[session_id];
+      if (from) {
+        return from;
+      } else if (userInfo) {
+        return userInfo.metas[0].profile.displayName;
+      } else {
+        return "Mystery user";
       }
-      if (customEvent === "speaker_perm" && session_id === NAF.clientId) {
-        console.log("on speaker_perm", { session_id, body });
-        hubChannel._permissions.speaker = body;
-        APP.store.addon.isSpeakerOn = body;
-        hubChannel.setSpeakerState(session_id, body);
-        addToPresenceLog({ type: "log", body: `Speaker mode ${body ? "enabled" : "diabled"}.` });
-      }
-    } else {
-      const getAuthor = () => {
-        const userInfo = hubChannel.presence.state[session_id];
-        if (from) {
-          return from;
-        } else if (userInfo) {
-          return userInfo.metas[0].profile.displayName;
-        } else {
-          return "Mystery user";
-        }
-      };
+    };
 
-      const name = getAuthor();
-      const maySpawn = scene.is("entered");
+    const name = getAuthor();
+    const maySpawn = scene.is("entered");
 
-      const incomingMessage = { name, type, body, maySpawn, sessionId: session_id };
+    const incomingMessage = { name, type, body, maySpawn, sessionId: session_id };
 
-      if (scene.is("vr-mode")) {
-        createInWorldLogMessage(incomingMessage);
-      }
-
-      addToPresenceLog(incomingMessage);
+    if (scene.is("vr-mode")) {
+      createInWorldLogMessage(incomingMessage);
     }
+
+    addToPresenceLog(incomingMessage);
   });
 
   hubPhxChannel.on("hub_refresh", ({ session_id, hubs, stale_fields }) => {

@@ -359,31 +359,7 @@ export default class HubChannel extends EventTarget {
     });
   };
 
-  customMessage = (sessionId, type, value) =>
-    this.channel.push("message", {
-      session_id: sessionId,
-      type: `custom_${type}`,
-      body: value,
-      from: NAF.clientId
-    });
-
-  getSpeakerById = sessionId => {
-    const playerObejct = APP.componentRegistry["player-info"].find(e => e.playerSessionId === sessionId);
-    if (playerObejct) {
-      const audioSource = playerObejct.el.querySelector("[avatar-audio-source]");
-      return !AFRAME.utils.entity.getComponentProperty(audioSource, "avatar-audio-source").positional;
-    }
-  };
-
-  setSpeakerById = (sessionId, value) => {
-    const playerObejct = APP.componentRegistry["player-info"].find(e => e.playerSessionId === sessionId);
-    const audioSource = playerObejct.el.querySelector("[avatar-audio-source]");
-    AFRAME.utils.entity.setComponentProperty(audioSource, "avatar-audio-source", { positional: !value });
-  };
-
   mute = sessionId => this.channel.push("mute", { session_id: sessionId });
-  setSpeakerPerm = (sessionId, value) => this.customMessage(sessionId, "speaker_perm", value);
-  setSpeakerState = (sessionId, value) => this.customMessage(sessionId, "speaker_state", value);
   addOwner = sessionId => this.channel.push("add_owner", { session_id: sessionId });
   removeOwner = sessionId => this.channel.push("remove_owner", { session_id: sessionId });
 
