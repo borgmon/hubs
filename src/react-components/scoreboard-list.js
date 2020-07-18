@@ -1,21 +1,14 @@
-import configs from "../utils/configs";
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import { FormattedMessage } from "react-intl";
 import classNames from "classnames";
 
 import rootStyles from "../assets/stylesheets/ui-root.scss";
 import styles from "../assets/stylesheets/presence-list.scss";
-import maskEmail from "../utils/mask-email";
-import StateLink from "./state-link.js";
 import { WithHoverSound } from "./wrap-with-audio";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { pushHistoryPath, withSlug } from "../utils/history";
-import { hasReticulumServer } from "../utils/phoenix-utils";
-import { InlineSVG } from "./svgi";
 import { faListOl } from "@fortawesome/free-solid-svg-icons/faListOl";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
-
+import { setScoreList } from "./custom/custom-scoreboard";
 const key = "6pgVqTSKAz4GTeZPX2D5kMFmSwR8UFvs9e5GWtdacEY34N28bEREfCJTWVMHUkN2";
 const baseUrl = "https://us-central1-wlacc-hubs.cloudfunctions.net/api";
 const initState = { scoreList: [], selectList: [], phase: "SETUP", courseId: "", courseWorks: "" };
@@ -23,13 +16,6 @@ const initState = { scoreList: [], selectList: [], phase: "SETUP", courseId: "",
 export default class ScoreboardList extends Component {
   static propTypes = {
     hubChannel: PropTypes.object,
-    presences: PropTypes.object,
-    history: PropTypes.object,
-    sessionId: PropTypes.string,
-    signedIn: PropTypes.bool,
-    email: PropTypes.string,
-    onSignIn: PropTypes.func,
-    onSignOut: PropTypes.func,
     expanded: PropTypes.bool,
     onExpand: PropTypes.func
   };
@@ -39,15 +25,13 @@ export default class ScoreboardList extends Component {
   isMod = () => this.props.hubChannel.can("kick_users");
 
   getSelection = id => {
-    if (this.isMod()) {
-      if (!id) {
-        this.getCourses(id);
-      } else if (!this.state.courseId) {
-        this.setState({ courseId: id });
-        this.getCourseWorks(id);
-      } else {
-        this.getRanks(this.state.courseId, id);
-      }
+    if (!id) {
+      this.getCourses(id);
+    } else if (!this.state.courseId) {
+      this.setState({ courseId: id });
+      this.getCourseWorks(id);
+    } else {
+      this.getRanks(this.state.courseId, id);
     }
   };
 
@@ -76,7 +60,7 @@ export default class ScoreboardList extends Component {
     })
       .then(response => response.json())
       .then(responseJson => {
-        // publish result here
+        setScoreList(responseJson);
         this.setState({ scoreList: responseJson, phase: "DONE" });
       });
   };
@@ -113,7 +97,14 @@ export default class ScoreboardList extends Component {
   };
 
   componentDidMount() {
-    this.getSelection();
+    if (this.isMod()) {
+      this.getSelection();
+    }
+
+    document.body.addEventListener("custom_scoreboard", event => {
+      console.log("recei", event.detail);
+      this.setState({ scoreList: event.detail, phase: "DONE" });
+    });
 
     document.querySelector(".a-canvas").addEventListener(
       "mouseup",
@@ -142,7 +133,7 @@ export default class ScoreboardList extends Component {
         return (
           <div className={styles.presenceList}>
             <div className={styles.contents}>
-              <div>Your room moderator need to setup scoreboard first</div>
+              <div>Your room moderator needs to setup scoreboard first</div>
             </div>
           </div>
         );
