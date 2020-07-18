@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListOl } from "@fortawesome/free-solid-svg-icons/faListOl";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
 import { setScoreList } from "./custom/custom-scoreboard";
+
 const key = "6pgVqTSKAz4GTeZPX2D5kMFmSwR8UFvs9e5GWtdacEY34N28bEREfCJTWVMHUkN2";
 const baseUrl = "https://us-central1-wlacc-hubs.cloudfunctions.net/api";
 const initState = { scoreList: [], selectList: [], phase: "SETUP", courseId: "", courseWorks: "" };
@@ -67,6 +68,7 @@ export default class ScoreboardList extends Component {
 
   restartSetup = () => {
     this.setState(initState);
+    setScoreList([]);
     this.getSelection();
   };
 
@@ -102,8 +104,12 @@ export default class ScoreboardList extends Component {
     }
 
     document.body.addEventListener("custom_scoreboard", event => {
-      console.log("recei", event.detail);
-      this.setState({ scoreList: event.detail, phase: "DONE" });
+      const ls = event.detail;
+      if (ls.length > 0) {
+        this.setState({ scoreList: event.detail, phase: "DONE" });
+      } else {
+        this.setState(initState);
+      }
     });
 
     document.querySelector(".a-canvas").addEventListener(
@@ -119,58 +125,70 @@ export default class ScoreboardList extends Component {
     clearTimeout(this.timeout);
   }
 
-  renderExpandedList() {
-    if (this.state.phase === "SETUP") {
-      if (this.isMod()) {
-        return (
-          <div className={styles.presenceList}>
-            <div className={styles.contents}>
-              <div className={styles.rows}>{this.state.selectList.map(this.domForSelection)}</div>
-            </div>
-          </div>
-        );
-      } else {
-        return (
-          <div className={styles.presenceList}>
-            <div className={styles.contents}>
-              <div>Your room moderator needs to setup scoreboard first</div>
-            </div>
-          </div>
-        );
-      }
-    } else if (this.state.phase === "DONE") {
+  setupScreen() {
+    return (
+      <div>
+        {this.isMod() ? (
+          <div className={styles.rows}>{this.state.selectList.map(this.domForSelection)}</div>
+        ) : (
+          <div>Your room moderator needs to setup scoreboard first</div>
+        )}
+      </div>
+    );
+  }
+
+  listScreen() {
+    return (
+      <div>
+        {this.resetBar()}
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>{this.state.scoreList.map(value => this.domForScoreboard(value))}</tbody>
+        </table>
+      </div>
+    );
+  }
+
+  loadingScreen() {
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <FontAwesomeIcon icon={faSpinner} spin />
+      </div>
+    );
+  }
+
+  resetBar() {
+    if (this.isMod()) {
       return (
-        <div className={styles.presenceList}>
-          <div className={styles.contents}>
-            {this.isMod() ? (
-              <div className={styles.listItem}>
-                <div className={styles.listItemLink} onClick={() => this.restartSetup()}>
-                  RESET
-                </div>
-              </div>
-            ) : null}
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Name</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody>{this.state.scoreList.map(value => this.domForScoreboard(value))}</tbody>
-            </table>
-          </div>
-        </div>
-      );
-    } else if (this.state.phase === "LOADING") {
-      return (
-        <div className={styles.presenceList}>
-          <div className={styles.contents} style={{ display: "flex", justifyContent: "center" }}>
-            <FontAwesomeIcon icon={faSpinner} spin />
+        <div className={styles.listItem}>
+          <div className={styles.listItemLink} onClick={() => this.restartSetup()}>
+            RESET
           </div>
         </div>
       );
     }
+  }
+
+  renderExpandedList() {
+    return (
+      <div className={styles.presenceList}>
+        <div className={styles.contents}>
+          {this.state.phase === "SETUP"
+            ? this.setupScreen()
+            : this.state.phase === "DONE"
+              ? this.listScreen()
+              : this.state.phase === "LOADING"
+                ? this.loadingScreen()
+                : null}
+        </div>
+      </div>
+    );
   }
 
   render() {
