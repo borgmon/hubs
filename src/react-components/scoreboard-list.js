@@ -17,6 +17,8 @@ import { faListOl } from "@fortawesome/free-solid-svg-icons/faListOl";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
 
 const key = "6pgVqTSKAz4GTeZPX2D5kMFmSwR8UFvs9e5GWtdacEY34N28bEREfCJTWVMHUkN2";
+const baseUrl = "https://us-central1-wlacc-hubs.cloudfunctions.net/api";
+const initState = { scoreList: [], selectList: [], phase: "SETUP", courseId: "", courseWorks: "" };
 
 export default class ScoreboardList extends Component {
   static propTypes = {
@@ -32,7 +34,7 @@ export default class ScoreboardList extends Component {
     onExpand: PropTypes.func
   };
 
-  state = { scoreList: [], selectList: [], phase: "SETUP", courseId: "", courseWorks: "" };
+  state = initState;
 
   isMod = () => this.props.hubChannel.can("kick_users");
 
@@ -51,9 +53,7 @@ export default class ScoreboardList extends Component {
 
   getCourses = () => {
     this.setState({ phase: "LOADING" });
-    fetch("https://us-central1-wlacc-hubs.cloudfunctions.net/api/courses", {
-      headers: { key }
-    })
+    fetch(`${baseUrl}/courses`, { headers: { key } })
       .then(response => response.json())
       .then(responseJson => {
         this.setState({ selectList: responseJson, phase: "SETUP" });
@@ -62,9 +62,7 @@ export default class ScoreboardList extends Component {
 
   getCourseWorks = courseId => {
     this.setState({ phase: "LOADING" });
-    fetch(`https://us-central1-wlacc-hubs.cloudfunctions.net/api/courseWorks?courseId=${courseId}`, {
-      headers: { key }
-    })
+    fetch(`${baseUrl}/courseWorks?courseId=${courseId}`, { headers: { key } })
       .then(response => response.json())
       .then(responseJson => {
         this.setState({ selectList: responseJson, phase: "SETUP" });
@@ -73,17 +71,19 @@ export default class ScoreboardList extends Component {
 
   getRanks = (courseId, courseWorksId) => {
     this.setState({ phase: "LOADING" });
-    fetch(
-      `https://us-central1-wlacc-hubs.cloudfunctions.net/api/ranks?courseId=${courseId}&courseWorkId=${courseWorksId}`,
-      {
-        headers: { key }
-      }
-    )
+    fetch(`${baseUrl}/ranks?courseId=${courseId}&courseWorkId=${courseWorksId}`, {
+      headers: { key }
+    })
       .then(response => response.json())
       .then(responseJson => {
         // publish result here
         this.setState({ scoreList: responseJson, phase: "DONE" });
       });
+  };
+
+  restartSetup = () => {
+    this.setState(initState);
+    this.getSelection();
   };
 
   domForScoreboard = data => {
@@ -153,7 +153,9 @@ export default class ScoreboardList extends Component {
           <div className={styles.contents}>
             {this.isMod() ? (
               <div className={styles.listItem}>
-                <div className={styles.listItemLink}>Restart</div>
+                <div className={styles.listItemLink} onClick={() => this.restartSetup()}>
+                  RESET
+                </div>
               </div>
             ) : null}
             <table>
