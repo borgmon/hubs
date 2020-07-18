@@ -14,6 +14,9 @@ import { pushHistoryPath, withSlug } from "../utils/history";
 import { hasReticulumServer } from "../utils/phoenix-utils";
 import { InlineSVG } from "./svgi";
 import { faListOl } from "@fortawesome/free-solid-svg-icons/faListOl";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
+
+const key = "6pgVqTSKAz4GTeZPX2D5kMFmSwR8UFvs9e5GWtdacEY34N28bEREfCJTWVMHUkN2";
 
 export default class ScoreboardList extends Component {
   static propTypes = {
@@ -29,15 +32,65 @@ export default class ScoreboardList extends Component {
     onExpand: PropTypes.func
   };
 
-  state = {
-    scoreList: []
+  state = { scoreList: [], selectList: [], phase: "SETUP", courseId: "", courseWorks: "" };
+
+  isMod = () => this.props.hubChannel.can("kick_users");
+
+  getSelection = id => {
+    if (this.isMod()) {
+      if (!id) {
+        this.getCourses(id);
+      } else if (!this.state.courseId) {
+        this.setState({ courseId: id });
+        this.getCourseWorks(id);
+      } else {
+        this.getRanks(this.state.courseId, id);
+      }
+    }
   };
 
-  domForScoreboard = (data, index) => {
+  getCourses = () => {
+    this.setState({ phase: "LOADING" });
+    fetch("https://us-central1-wlacc-hubs.cloudfunctions.net/api/courses", {
+      headers: { key }
+    })
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({ selectList: responseJson, phase: "SETUP" });
+      });
+  };
+
+  getCourseWorks = courseId => {
+    this.setState({ phase: "LOADING" });
+    fetch(`https://us-central1-wlacc-hubs.cloudfunctions.net/api/courseWorks?courseId=${courseId}`, {
+      headers: { key }
+    })
+      .then(response => response.json())
+      .then(responseJson => {
+        this.setState({ selectList: responseJson, phase: "SETUP" });
+      });
+  };
+
+  getRanks = (courseId, courseWorksId) => {
+    this.setState({ phase: "LOADING" });
+    fetch(
+      `https://us-central1-wlacc-hubs.cloudfunctions.net/api/ranks?courseId=${courseId}&courseWorkId=${courseWorksId}`,
+      {
+        headers: { key }
+      }
+    )
+      .then(response => response.json())
+      .then(responseJson => {
+        // publish result here
+        this.setState({ scoreList: responseJson, phase: "DONE" });
+      });
+  };
+
+  domForScoreboard = data => {
     return (
-      <WithHoverSound key={index}>
+      <WithHoverSound key={data.name}>
         <tr>
-          <td>{index + 1}</td>
+          <td>{data.rank}</td>
           <td>{data.name}</td>
           <td>{data.score}</td>
         </tr>
@@ -45,7 +98,23 @@ export default class ScoreboardList extends Component {
     );
   };
 
+  domForSelection = data => {
+    return (
+      <WithHoverSound key={data.id}>
+        <div className={styles.row}>
+          <div className={classNames({ [styles.listItem]: true })}>
+            <div className={styles.listItemLink} onClick={() => this.getSelection(data.id)}>
+              {data.name}
+            </div>
+          </div>
+        </div>
+      </WithHoverSound>
+    );
+  };
+
   componentDidMount() {
+    this.getSelection();
+
     document.querySelector(".a-canvas").addEventListener(
       "mouseup",
       () => {
@@ -60,28 +129,55 @@ export default class ScoreboardList extends Component {
   }
 
   renderExpandedList() {
-    fetch("https://jsonplaceholder.typicode.com/todos/1")
-      .then(response => response.json())
-      .then(responseJson => {
-        this.setState({ scoreList: [{ name: "test", score: responseJson.id }] });
-      });
-
-    return (
-      <div className={styles.presenceList}>
-        <div className={styles.contents}>
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Name</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody>{this.state.scoreList.map((value, index) => this.domForScoreboard(value, index))}</tbody>
-          </table>
+    if (this.state.phase === "SETUP") {
+      if (this.isMod()) {
+        return (
+          <div className={styles.presenceList}>
+            <div className={styles.contents}>
+              <div className={styles.rows}>{this.state.selectList.map(this.domForSelection)}</div>
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div className={styles.presenceList}>
+            <div className={styles.contents}>
+              <div>Your room moderator need to setup scoreboard first</div>
+            </div>
+          </div>
+        );
+      }
+    } else if (this.state.phase === "DONE") {
+      return (
+        <div className={styles.presenceList}>
+          <div className={styles.contents}>
+            {this.isMod() ? (
+              <div className={styles.listItem}>
+                <div className={styles.listItemLink}>Restart</div>
+              </div>
+            ) : null}
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>{this.state.scoreList.map(value => this.domForScoreboard(value))}</tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    );
+      );
+    } else if (this.state.phase === "LOADING") {
+      return (
+        <div className={styles.presenceList}>
+          <div className={styles.contents} style={{ display: "flex", justifyContent: "center" }}>
+            <FontAwesomeIcon icon={faSpinner} spin />
+          </div>
+        </div>
+      );
+    }
   }
 
   render() {
