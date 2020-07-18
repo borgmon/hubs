@@ -64,6 +64,7 @@ import PreferencesScreen from "./preferences-screen.js";
 import OutputLevelWidget from "./output-level-widget.js";
 import PresenceLog from "./presence-log.js";
 import PresenceList from "./presence-list.js";
+import ScoreboardList from "./scoreboard-list.js";
 import ObjectList from "./object-list.js";
 import SettingsMenu from "./settings-menu.js";
 import PreloadOverlay from "./preload-overlay.js";
@@ -212,7 +213,8 @@ class UIRoot extends Component {
     objectInfo: null,
     objectSrc: "",
     isObjectListExpanded: false,
-    isPresenceListExpanded: false
+    isPresenceListExpanded: false,
+    isScoreboardListExpanded: false
   };
 
   constructor(props) {
@@ -1599,6 +1601,7 @@ class UIRoot extends Component {
     const showSettingsMenu = !streaming && !preload && !showObjectInfo;
     const showObjectList = !showObjectInfo;
     const showPresenceList = !showObjectInfo;
+    const showScoreboardList = !showObjectInfo;
 
     const displayNameOverride = this.props.hubIsBound
       ? getPresenceProfileForSession(this.props.presences, this.props.sessionId).displayName
@@ -2034,12 +2037,41 @@ class UIRoot extends Component {
             )}
             {streamingTip}
 
+            {showScoreboardList && (
+              <ScoreboardList
+                hubChannel={this.props.hubChannel}
+                history={this.props.history}
+                presences={this.props.presences}
+                sessionId={this.props.sessionId}
+                signedIn={this.state.signedIn}
+                email={this.props.store.state.credentials.email}
+                onSignIn={this.showSignInDialog}
+                onSignOut={this.signOut}
+                expanded={!this.state.isObjectListExpanded && this.state.isScoreboardListExpanded}
+                onExpand={expand => {
+                  if (expand) {
+                    this.setState({
+                      isScoreboardListExpanded: expand,
+                      isObjectListExpanded: false,
+                      isPresenceListExpanded: false
+                    });
+                  } else {
+                    this.setState({ isScoreboardListExpanded: expand });
+                  }
+                }}
+              />
+            )}
+
             {showObjectList && (
               <ObjectList
                 scene={this.props.scene}
                 onExpand={(expand, uninspect) => {
                   if (expand) {
-                    this.setState({ isPresenceListExpanded: false, isObjectListExpanded: expand });
+                    this.setState({
+                      isScoreboardListExpanded: false,
+                      isPresenceListExpanded: false,
+                      isObjectListExpanded: expand
+                    });
                   } else {
                     this.setState({ isObjectListExpanded: expand });
                   }
@@ -2069,7 +2101,11 @@ class UIRoot extends Component {
                 expanded={!this.state.isObjectListExpanded && this.state.isPresenceListExpanded}
                 onExpand={expand => {
                   if (expand) {
-                    this.setState({ isPresenceListExpanded: expand, isObjectListExpanded: false });
+                    this.setState({
+                      isPresenceListExpanded: expand,
+                      isObjectListExpanded: false,
+                      isScoreboardListExpanded: false
+                    });
                   } else {
                     this.setState({ isPresenceListExpanded: expand });
                   }

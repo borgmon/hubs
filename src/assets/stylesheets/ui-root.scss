@@ -205,6 +205,22 @@ body.vr-mode {
     justify-content: center;
   }
 }
+
+:local(.scoreboard-list-button) {
+  @extend %button-with-count;
+
+  @media(min-width: 501px) {
+    top: 16px;
+    right: 228px;
+    justify-content: space-evenly;
+  }
+
+  @media(max-width: 500px) {
+    right: 16px;
+    top: 176px;
+  }
+}
+
 :local(.object-list-button) {
   @extend %button-with-count;
 
