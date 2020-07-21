@@ -11,7 +11,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
 import { setScoreList } from "../custom/custom-scoreboard";
 
 const key = "6pgVqTSKAz4GTeZPX2D5kMFmSwR8UFvs9e5GWtdacEY34N28bEREfCJTWVMHUkN2";
-const baseUrl = "https://us-central1-wlacc-hubs.cloudfunctions.net/api";
+const baseUrl = "https://api.tri-camphub.com";
 const initState = { scoreList: [], selectList: [], phase: "SETUP", courseId: "", courseWorks: "" };
 
 export default class ScoreboardList extends Component {
