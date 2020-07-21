@@ -158,6 +158,8 @@ import { SOUND_CHAT_MESSAGE } from "./systems/sound-effects-system";
 
 import "./gltf-component-mappings";
 
+import CustomSpeaker from "./custom/custom-speaker";
+
 import { App } from "./App";
 import { platformUnsupported } from "./support";
 
@@ -1246,6 +1248,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       }, 5000);
     }, 20000);
   };
+
+  const customSpeaker = new CustomSpeaker(hubChannel, addToPresenceLog);
 
   const messageDispatch = new MessageDispatch(
     scene,

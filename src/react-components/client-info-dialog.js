@@ -6,6 +6,7 @@ import styles from "../assets/stylesheets/client-info-dialog.scss";
 import { FormattedMessage } from "react-intl";
 import { sluglessPath } from "../utils/history";
 import { getAvatarThumbnailUrl } from "../utils/avatar-utils";
+import { setSpeakerPerm, getSpeakerById } from "../custom/custom-speaker";
 
 export function getClientInfoClientId(location) {
   const { search } = location;
@@ -57,6 +58,14 @@ export default class ClientInfoDialog extends Component {
       async () => await hubChannel.mute(clientId),
       "mute-user"
     );
+
+    onClose();
+  }
+
+  speaker(value) {
+    const { clientId, hubChannel, onClose } = this.props;
+
+    setSpeakerPerm({ clientId, value });
 
     onClose();
   }
@@ -133,6 +142,7 @@ export default class ClientInfoDialog extends Component {
     const mayAddOwner = hubChannel.canOrWillIfCreator("update_roles") && !targetIsOwner && !targetIsCreator;
     const mayRemoveOwner = hubChannel.canOrWillIfCreator("update_roles") && targetIsOwner && !targetIsCreator;
     const isHidden = hubChannel.isHidden(clientId);
+    const getSpeaker = getSpeakerById(clientId);
 
     return (
       <DialogContainer className={styles.clientInfoDialog} title={title} wide={true} {...this.props}>
@@ -172,6 +182,18 @@ export default class ClientInfoDialog extends Component {
                 <FormattedMessage id="client-info.mute-button" />
               </button>
             )}
+            {mayKick &&
+              !getSpeaker && (
+                <button onClick={() => this.speaker(true)}>
+                  <FormattedMessage id="client-info.speaker-on-button" />
+                </button>
+              )}
+            {mayKick &&
+              getSpeaker && (
+                <button onClick={() => this.speaker(false)}>
+                  <FormattedMessage id="client-info.speaker-off-button" />
+                </button>
+              )}
             {mayKick && (
               <button onClick={() => this.kick()}>
                 <FormattedMessage id="client-info.kick-button" />

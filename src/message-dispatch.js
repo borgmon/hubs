@@ -5,7 +5,7 @@ import { messages } from "./utils/i18n";
 import { spawnChatMessage } from "./react-components/chat-message";
 import { SOUND_QUACK, SOUND_SPECIAL_QUACK } from "./systems/sound-effects-system";
 import ducky from "./assets/models/DuckyMesh.glb";
-
+import { setSpeakerState } from "./custom/custom-speaker";
 let uiRoot;
 // Handles user-entered messages
 export default class MessageDispatch {
@@ -58,6 +58,17 @@ export default class MessageDispatch {
           if (this.scene.systems["hubs-systems"].characterController.enableFly(true)) {
             this.addToPresenceLog({ type: "log", body: "Fly mode enabled." });
           }
+        }
+        break;
+      case "speaker":
+        if (window.APP.store.addon.isSpeakerOn) {
+          setSpeakerState({ clientId: NAF.clientId, value: false });
+          window.APP.store.addon.isSpeakerOn = false;
+          this.addToPresenceLog({ type: "log", body: "Speaker mode disabled." });
+        } else {
+          setSpeakerState({ clientId: NAF.clientId, value: true });
+          window.APP.store.addon.isSpeakerOn = true;
+          this.addToPresenceLog({ type: "log", body: "Speaker mode enabled." });
         }
         break;
       case "grow":
