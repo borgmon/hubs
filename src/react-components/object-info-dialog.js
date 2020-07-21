@@ -418,14 +418,17 @@ export default class ObjectInfoDialog extends Component {
               )}
             </div>
             <div className={cStyles.primaryActionButtons}>
-              <button onClick={this.toggleLights.bind(this)}>
-                <FormattedMessage id={`object-info.${this.state.enableLights ? "lower" : "raise"}-lights`} />
-              </button>
-              {this.props.scene.is("entered") && (
-                <button onClick={this.enqueueWaypointTravel}>
-                  <FormattedMessage id="object-info.waypoint" />
+              {this.props.hubChannel.can("kick_users") && (
+                <button onClick={this.toggleLights.bind(this)}>
+                  <FormattedMessage id={`object-info.${this.state.enableLights ? "lower" : "raise"}-lights`} />
                 </button>
               )}
+              {this.props.scene.is("entered") &&
+                this.props.hubChannel.can("kick_users") && (
+                  <button onClick={this.enqueueWaypointTravel}>
+                    <FormattedMessage id="object-info.waypoint" />
+                  </button>
+                )}
               {showRemoveButton ? (
                 <button onClick={this.remove.bind(this)}>
                   <FormattedMessage id="object-info.remove-button" />
