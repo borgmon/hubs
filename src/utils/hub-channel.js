@@ -104,7 +104,6 @@ export default class HubChannel extends EventTarget {
   };
 
   setPermissionsFromToken = token => {
-    this.store.addon = this.store.addon ? this.store.addon : {};
     // Note: token is not verified.
     this._permissions = jwtDecode(token);
     this._permissions.speaker = this._permissions.kick_users;

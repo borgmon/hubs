@@ -8,7 +8,7 @@ import { WithHoverSound } from "./wrap-with-audio";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faListOl } from "@fortawesome/free-solid-svg-icons/faListOl";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
-import { setScoreList } from "./custom/custom-scoreboard";
+import { setScoreList } from "../custom/custom-scoreboard";
 
 const key = "6pgVqTSKAz4GTeZPX2D5kMFmSwR8UFvs9e5GWtdacEY34N28bEREfCJTWVMHUkN2";
 const baseUrl = "https://us-central1-wlacc-hubs.cloudfunctions.net/api";

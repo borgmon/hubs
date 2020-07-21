@@ -61,13 +61,13 @@ export default class MessageDispatch {
         }
         break;
       case "speaker":
-        if (window.APP.store.addon.isSpeakerOn) {
+        if (APP.store.custom.isSpeakerOn) {
           setSpeakerState({ clientId: NAF.clientId, value: false });
-          window.APP.store.addon.isSpeakerOn = false;
+          APP.store.custom.isSpeakerOn = false;
           this.addToPresenceLog({ type: "log", body: "Speaker mode disabled." });
         } else {
           setSpeakerState({ clientId: NAF.clientId, value: true });
-          window.APP.store.addon.isSpeakerOn = true;
+          APP.store.custom.isSpeakerOn = true;
           this.addToPresenceLog({ type: "log", body: "Speaker mode enabled." });
         }
         break;

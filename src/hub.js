@@ -158,12 +158,10 @@ import { SOUND_CHAT_MESSAGE } from "./systems/sound-effects-system";
 
 import "./gltf-component-mappings";
 
-import CustomSpeaker from "./custom/custom-speaker";
-
 import { App } from "./App";
 import { platformUnsupported } from "./support";
 
-import CustomScoreboard from "./react-components/custom/custom-scoreboard";
+import { initCustom } from "./custom/custom-controller";
 
 window.APP = new App();
 window.APP.RENDER_ORDER = {
@@ -1251,8 +1249,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 20000);
   };
 
-  const customSpeaker = new CustomSpeaker(hubChannel, addToPresenceLog);
-  const customScoreboard = new CustomScoreboard(hubChannel, addToPresenceLog);
+  initCustom(hubChannel, addToPresenceLog);
 
   const messageDispatch = new MessageDispatch(
     scene,

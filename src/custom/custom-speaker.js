@@ -15,16 +15,14 @@ export default class CustomSpeaker {
   }
   speakerStateCallback(data) {
     if (data.clientId !== NAF.clientId) {
-      console.log("on speaker_state", data);
       setSpeakerById(data.clientId, data.value);
     }
   }
   speakerPermCallback(data) {
     if (data.clientId === NAF.clientId) {
-      console.log("on speaker_perm", data);
       const value = data.value;
       this.hubChannel._permissions.speaker = value;
-      APP.store.addon.isSpeakerOn = value;
+      APP.store.custom.isSpeakerOn = value;
       setSpeakerState({ clientId: data.clientId, value });
       console.log(this);
       this.addToPresenceLog({
@@ -38,7 +36,6 @@ export default class CustomSpeaker {
 const channelName = "custom-speaker";
 
 export const sendMessage = (channelName, value) => {
-  console.log(`send message ${channelName}`);
   NAF.connection.broadcastDataGuaranteed(channelName, value);
 };
 
