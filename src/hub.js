@@ -163,6 +163,8 @@ import CustomSpeaker from "./custom/custom-speaker";
 import { App } from "./App";
 import { platformUnsupported } from "./support";
 
+import CustomScoreboard from "./react-components/custom/custom-scoreboard";
+
 window.APP = new App();
 window.APP.RENDER_ORDER = {
   HUD_BACKGROUND: 1,
@@ -1250,6 +1252,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const customSpeaker = new CustomSpeaker(hubChannel, addToPresenceLog);
+  const customScoreboard = new CustomScoreboard(hubChannel, addToPresenceLog);
 
   const messageDispatch = new MessageDispatch(
     scene,
