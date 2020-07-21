@@ -61,14 +61,16 @@ export default class MessageDispatch {
         }
         break;
       case "speaker":
-        if (APP.store.custom.isSpeakerOn) {
-          setSpeakerState({ clientId: NAF.clientId, value: false });
-          APP.store.custom.isSpeakerOn = false;
-          this.addToPresenceLog({ type: "log", body: "Speaker mode disabled." });
-        } else {
-          setSpeakerState({ clientId: NAF.clientId, value: true });
-          APP.store.custom.isSpeakerOn = true;
-          this.addToPresenceLog({ type: "log", body: "Speaker mode enabled." });
+        if (this.hubChannel.store.custom.enabled.includes("custom-speaker")) {
+          if (APP.store.custom.isSpeakerOn) {
+            setSpeakerState({ clientId: NAF.clientId, value: false });
+            APP.store.custom.isSpeakerOn = false;
+            this.addToPresenceLog({ type: "log", body: "Speaker mode disabled." });
+          } else {
+            setSpeakerState({ clientId: NAF.clientId, value: true });
+            APP.store.custom.isSpeakerOn = true;
+            this.addToPresenceLog({ type: "log", body: "Speaker mode enabled." });
+          }
         }
         break;
       case "grow":

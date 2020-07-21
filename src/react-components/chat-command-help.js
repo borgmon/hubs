@@ -28,7 +28,11 @@ export default class ChatCommandHelp extends Component {
       commands.push("fly");
     }
 
-    if (window.APP.hubChannel && window.APP.hubChannel.can("speaker")) {
+    if (
+      window.APP.hubChannel &&
+      window.APP.hubChannel.can("speaker") &&
+      window.APP.hubChannel.store.custom.enabled.includes("custom-speaker")
+    ) {
       commands.push("speaker");
     }
 
