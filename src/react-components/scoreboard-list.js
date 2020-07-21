@@ -109,6 +109,9 @@ export default class ScoreboardList extends Component {
         this.setState({ scoreList: event.detail, phase: "DONE" });
       } else {
         this.setState(initState);
+        if (this.isMod()) {
+          this.getSelection();
+        }
       }
     });
 
