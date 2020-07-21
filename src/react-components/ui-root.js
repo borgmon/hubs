@@ -2037,23 +2037,24 @@ class UIRoot extends Component {
             )}
             {streamingTip}
 
-            {showScoreboardList && (
-              <ScoreboardList
-                hubChannel={this.props.hubChannel}
-                expanded={!this.state.isObjectListExpanded && this.state.isScoreboardListExpanded}
-                onExpand={expand => {
-                  if (expand) {
-                    this.setState({
-                      isScoreboardListExpanded: expand,
-                      isObjectListExpanded: false,
-                      isPresenceListExpanded: false
-                    });
-                  } else {
-                    this.setState({ isScoreboardListExpanded: expand });
-                  }
-                }}
-              />
-            )}
+            {showScoreboardList &&
+              this.props.store.custom.enabled.includes("custom-scoreboard") && (
+                <ScoreboardList
+                  hubChannel={this.props.hubChannel}
+                  expanded={!this.state.isObjectListExpanded && this.state.isScoreboardListExpanded}
+                  onExpand={expand => {
+                    if (expand) {
+                      this.setState({
+                        isScoreboardListExpanded: expand,
+                        isObjectListExpanded: false,
+                        isPresenceListExpanded: false
+                      });
+                    } else {
+                      this.setState({ isScoreboardListExpanded: expand });
+                    }
+                  }}
+                />
+              )}
 
             {showObjectList && (
               <ObjectList
